@@ -2454,7 +2454,38 @@ char* call::createSendingMessage(SendingMessage *src, int P_index, char *msg_buf
 
         /* Build the auth credenticals */
         char uri[MAX_HEADER_LEN];
-        sprintf (uri, "%s:%d", remote_ip, remote_port);
+
+        /* Extract the Request-URI from the first line of the message */
+        /* Format: METHOD Request-URI SIP/2.0 */
+        char *uri_start = strchr(msg_buffer, ' ');
+        if (uri_start) {
+            uri_start++; /* Skip the space after method */
+            char *uri_end = strchr(uri_start, ' ');
+            if (uri_end && (uri_end - uri_start < MAX_HEADER_LEN)) {
+                /* Copy the Request-URI */
+                int uri_len = uri_end - uri_start;
+                strncpy(uri, uri_start, uri_len);
+                uri[uri_len] = '\0';
+
+                /* Strip "sip:" or "sips:" prefix if present for the auth URI */
+                char *uri_without_scheme = uri;
+                if (strncmp(uri, "sip:", 4) == 0) {
+                    uri_without_scheme = uri + 4;
+                } else if (strncmp(uri, "sips:", 5) == 0) {
+                    uri_without_scheme = uri + 5;
+                }
+                /* Move the URI without scheme back to the start of the buffer */
+                if (uri_without_scheme != uri) {
+                    memmove(uri, uri_without_scheme, strlen(uri_without_scheme) + 1);
+                }
+            } else {
+                /* Fallback to default if parsing fails */
+                sprintf(uri, "%s:%d", remote_ip, remote_port);
+            }
+        } else {
+            /* Fallback to default if parsing fails */
+            sprintf(uri, "%s:%d", remote_ip, remote_port);
+        }
         /* These cause this function to  not be reentrant. */
         static char my_auth_user[MAX_HEADER_LEN + 2];
         static char my_auth_pass[MAX_HEADER_LEN + 2];
