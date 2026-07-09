@@ -14,8 +14,10 @@ This version was built from [SIPp 3.3.990](https://sourceforge.net/projects/sipp
 
 4. **epoll detection**: Replaced autoconf-archive macros with simple platform detection since epoll is Linux-only.
 
+5. **Improved handling of authentication**: Sets correct `uri` parameter in `Proxy-Authorization` header in `src.call.cpp:2458`
+
 ## Building
-See [CLAUDE.md](CLAUDE.md) for build instructions.  If you are looking for executables, see [binaries](binaries).
+See [CLAUDE.md](CLAUDE.md) for build instructions.  There is also a build script, `build-macos-arm.sh`.  If you are looking for executables, see [binaries](binaries).
 
 ## Usage
 ```
